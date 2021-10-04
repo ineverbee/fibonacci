@@ -1,0 +1,23 @@
+syntax = "proto3";
+package fibonacci.v1;
+option go_package = "github.com/ineverbee/fibonacci";
+
+import "google/api/annotations.proto";
+
+service Fibonacci {
+  rpc Fibo(IntRequest) returns (IntSliceResponse) {
+    option (google.api.http) = {
+      post: "/fibo"
+      body: "*"
+    };
+  }
+}
+
+message IntRequest {
+    uint32 x = 1;
+    uint32 y = 2;
+}
+
+message IntSliceResponse {
+    repeated uint32 result = 1;
+}
