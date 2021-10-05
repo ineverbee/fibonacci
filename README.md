@@ -17,7 +17,7 @@ docker-compose up
 
 Чтобы создать запрос к серверу запустите клиент в другом терминале
 ```
-docker-compose exec fibonacci ./client X Y
+docker-compose exec fibonacci ./client -- X Y
 ```
 `X`,`Y` - аргументы, порядковые номера начала и конца среза
 
