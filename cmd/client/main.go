@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -24,6 +25,12 @@ func main() {
 	y, err := strconv.Atoi(flag.Arg(1))
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	for x < 0 || y < 0 {
+		log.Println("arguments should be >= 0")
+		log.Println("Enter 2 non-negative arguments:")
+		fmt.Scanf("%d %d", &x, &y)
 	}
 
 	conn, err := grpc.Dial(":8080", grpc.WithInsecure())

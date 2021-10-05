@@ -16,24 +16,43 @@ type GRPCServer struct {
 }
 
 func (s *GRPCServer) Fibo(ctx context.Context, req *pb.IntRequest) (*pb.IntSliceResponse, error) {
-	res := []uint32{}
 	x, y := req.X, req.Y
 	if x > y {
 		x, y = y, x
 	}
-	for i := x; i <= y; i++ {
-		if val, err := s.Cache.Get(i); err == nil {
-			res = append(res, uint32(val))
-			continue
-		}
-		arr := fibo.Fibo(y)
-		for j, v := range arr {
-			if _, err := s.Cache.Get(uint32(j)); err != nil {
+	if y > 47 {
+		y = 47
+	}
+	res := make([]uint32, y+1)
+	if y < 2 {
+		res[1] = 1
+		for j, v := range res {
+			if _, err := s.Cache.Get(uint32(j)); err != nil && (j == 0 || v != 0) {
 				s.Cache.Set(uint32(j), v, time.Hour*24)
 			}
 		}
-		res = append(res, arr[i:y+1]...)
+		return &pb.IntSliceResponse{Result: res[x : y+1]}, nil
+	}
+	for i := x; i <= y; i++ {
+		if val, err := s.Cache.Get(i); err == nil {
+			res[i] = uint32(val)
+			continue
+		}
+		if (i - x) >= 2 {
+			fibo.Fibo(i, y, &res)
+		} else if val, err := s.Cache.Get(i - 2); err == nil && (i-x) == 1 {
+			res[i-2] = uint32(val)
+			fibo.Fibo(i, y, &res)
+		} else {
+			res[1] = 1
+			fibo.Fibo(2, y, &res)
+		}
 		break
 	}
-	return &pb.IntSliceResponse{Result: res}, nil
+	for j, v := range res {
+		if _, err := s.Cache.Get(uint32(j)); err != nil && (j == 0 || v != 0) {
+			s.Cache.Set(uint32(j), v, time.Hour*24)
+		}
+	}
+	return &pb.IntSliceResponse{Result: res[x : y+1]}, nil
 }
